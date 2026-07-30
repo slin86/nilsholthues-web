@@ -1,53 +1,51 @@
-# nilsholthues-web — Deploy-Scaffold
+# nilsholthues-web — Deploy Scaffold
 
-Statische Portfolio-Seite, verpackt nach deinem gewohnten Schema
-(Dockerfile → GitHub Actions → ghcr.io → ArgoCD → Kustomize-Overlays → Traefik).
+Static portfolio site, packaged according to your established pattern
+(Dockerfile → GitHub Actions → ghcr.io → ArgoCD → Kustomize overlays → Traefik).
 
-## Struktur
+## Structure
 
 ```
-Dockerfile              nginx:alpine + statische Dateien
-nginx.conf              einfache Server-Config, Caching für Bilder
-k8s/base/               Deployment + Service (Basis, env-unabhängig)
-k8s/overlays/internal/  Ingress auf nilsholthues.home.lan (Phase A)
-k8s/overlays/public/    IngressRoute auf nilsholthues.slin.io (Phase B),
-                        Phase C für nils-holthues.de ist auskommentiert vorbereitet
-.github/workflows/      Build & Push nach ghcr.io/slin86/nilsholthues-web
-argocd/application.yaml In dein argocd-Repo übernehmen
+Dockerfile              nginx:alpine + static files
+nginx.conf              simple server config, caching for images
+k8s/base/               Deployment + Service (base, environment-independent)
+k8s/overlays/internal/  Ingress on nilsholthues.home.lan (Phase A)
+k8s/overlays/public/    IngressRoute on nilsholthues.slin.io (Phase B),
+                        Phase C for nils-holthues.de is prepared in commented form
+.github/workflows/      Build & push to ghcr.io/slin86/nilsholthues-web
+argocd/application.yaml  Adopt into your argocd repo
 ```
 
-`index.html` + die vier Bilder (`hero-landungsbruecken.jpg`, `portrait-nils.jpg`,
-`harbor-tugboats-sunset.jpg`, `hamburg-flag.jpg`) kommen noch ins Repo-Root dazu,
-dann greift der Dockerfile-Copy.
+`index.html` + the four images (`hero-landungsbruecken.jpg`, `portrait-nils.jpg`,
+`harbor-tugboats-sunset.jpg`, `hamburg-flag.jpg`) will be added to the repo root,
+then the Dockerfile copy will take effect.
 
 ## Rollout
 
-1. **Phase A (intern):** ArgoCD-App zeigt auf `overlays/internal` → Test unter
+1. **Phase A (internal):** ArgoCD app points to `overlays/internal` → testing under
    `nilsholthues.home.lan`.
-2. **Phase B (slin.io):** `targetRevision`/`path` in der ArgoCD-App auf
-   `overlays/public` umstellen. `*.slin.io`-Wildcard-DNS und -Zertifikat greifen
-   bereits, es ist nichts Neues an DNS nötig — nur den Secret-Namen in
-   `ingressroute.yaml` auf deinen tatsächlichen Wildcard-Secret-Namen anpassen.
-3. **Phase C (nils-holthues.de):** siehe Runbook unten, dann den auskommentierten
-   Block in `ingressroute.yaml` aktivieren.
+2. **Phase B (slin.io):** Change `targetRevision`/`path` in the ArgoCD app to
+   `overlays/public`. The `*.slin.io` wildcard DNS and certificate are already
+   in place — no new DNS changes needed, just adjust the secret name in
+   `ingressroute.yaml` to your actual wildcard secret name.
+3. **Phase C (nils-holthues.de):** see runbook below, then activate the commented
+   block in `ingressroute.yaml`.
 
-## Runbook: nils-holthues.de anbinden (liegt bei united-domains)
+## Runbook: connecting nils-holthues.de (registered with united-domains)
 
-1. **Nameserver umstellen:** bei united-domains die NS für `nils-holthues.de` auf
-   deSEC setzen (`ns1.desec.io` / `ns2.desec.io`) — genau wie bei `slin.io`.
-2. **Zone in deSEC anlegen** und einen neuen, auf diese Domain **gescopten
-   DynDNS-Token** erzeugen (separat vom slin.io-Token, least privilege).
-3. **Dynamische IP-Updates:** Die FritzBox erlaubt i. d. R. nur einen
-   benutzerdefinierten DynDNS-Eintrag gleichzeitig — der ist schon für
-   `slin.io` belegt. Zwei Optionen:
-   - **Schnell:** A-Record einmalig manuell in deSEC auf deine aktuelle
-     öffentliche IP setzen (funktioniert, bis sich die IP ändert).
-   - **Sauber:** kleiner CronJob im Cluster, der die eigene öffentliche IP
-     ermittelt und bei Änderung `https://update.dedyn.io` mit dem
-     nils-holthues.de-Token aufruft — läuft dann unabhängig von der FritzBox
-     und passt gut zu deinem GitOps-Ansatz (Secret über Infisical).
-4. **Zertifikat:** je nachdem, ob du Traefiks natives ACME (lego) oder
-   cert-manager für die DNS-01-Challenge bei slin.io nutzt, dieselbe
-   Konfiguration um `nils-holthues.de` (+ `www.nils-holthues.de`) erweitern.
-5. **IngressRoute:** auskommentierten Block in `k8s/overlays/public/ingressroute.yaml`
-   aktivieren, `secretName` auf das neue Zertifikat-Secret setzen.
+1. **Change nameservers:** At united-domains, set the NS for `nils-holthues.de` to
+   deSEC (`ns1.desec.io` / `ns2.desec.io`) — same as for `slin.io`.
+2. **Create zone in deSEC** and generate a new DynDNS Token scoped to this domain
+   (separate from the slin.io token, following least privilege).
+3. **Dynamic IP updates:** The FritzBox typically allows only one custom
+   DynDNS entry at a time — the one for `slin.io` is already in use. Two options:
+    - **Quick:** Set an A-Record manually once in deSEC to your current public
+      IP (works until the IP changes).
+    - **Clean:** Small CronJob in the cluster that detects its public IP and,
+      upon change, calls `https://update.dedyn.io` with the
+      nils-holthues.de token — runs independently of the FritzBox and fits well
+      with your GitOps approach (secret via Infisical).
+4. **Certificate:** Depending on whether you use Traefik's native ACME (lego) or
+   cert-manager for the DNS-01 challenge at slin.io, extend the same
+   configuration to include `nils-holthues.de` (+ `www.nils-holthues.de`).
+5. **IngressRoute:** Activate the commented block in `k8s/overlays/public/ingressroute.yaml`, set `secretName` to the new certificate secret.
