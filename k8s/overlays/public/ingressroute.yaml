@@ -11,8 +11,7 @@ spec:
       services:
         - name: nilsholthues-web
           port: 80
-  tls:
-    secretName: slin-io-wildcard-tls   # <- an deinen bestehenden Wildcard-Secret-Namen anpassen
+  tls: {}
 
 ---
 # Phase C — sobald DNS-Delegation + eigenes Zertifikat für nils-holthues.de stehen,

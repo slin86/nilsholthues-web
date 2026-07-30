@@ -1,7 +1,6 @@
 # nilsholthues-web — Deploy Scaffold
 
-Static portfolio site, packaged according to your established pattern
-(Dockerfile → GitHub Actions → ghcr.io → ArgoCD → Kustomize overlays → Traefik).
+Static portfolio site.
 
 ## Structure
 
@@ -9,16 +8,14 @@ Static portfolio site, packaged according to your established pattern
 Dockerfile              nginx:alpine + static files
 nginx.conf              simple server config, caching for images
 k8s/base/               Deployment + Service (base, environment-independent)
-k8s/overlays/internal/  Ingress on nilsholthues.home.lan (Phase A)
-k8s/overlays/public/    IngressRoute on nilsholthues.slin.io (Phase B),
-                        Phase C for nils-holthues.de is prepared in commented form
+k8s/overlays/internal/  Ingress on nilsholthues.home.lan
+k8s/overlays/public/    IngressRoute on nilsholthues.slin.io
+                        nils-holthues.de is prepared
 .github/workflows/      Build & push to ghcr.io/slin86/nilsholthues-web
-argocd/application.yaml  Adopt into your argocd repo
 ```
 
-`index.html` + the four images (`hero-landungsbruecken.jpg`, `portrait-nils.jpg`,
-`harbor-tugboats-sunset.jpg`, `hamburg-flag.jpg`) will be added to the repo root,
-then the Dockerfile copy will take effect.
+`index.html` + four images (`hero-landungsbruecken.jpg`, `portrait-nils.jpg`,
+`harbor-tugboats-sunset.jpg`, `hamburg-flag.jpg`) at the repo root.
 
 ## Rollout
 
