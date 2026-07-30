@@ -6,4 +6,4 @@ resources:
 images:
 - name: ghcr.io/slin86/nilsholthues-web
   newName: ghcr.io/slin86/nilsholthues-web
-  newTag: 3bbabc87c8601a95bf7c6c496d09978254d20d12
+  newTag: 4bd89ecf31fb674d23afcba57e20e9981fd53b06
