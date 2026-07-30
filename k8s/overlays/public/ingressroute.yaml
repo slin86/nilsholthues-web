@@ -1,0 +1,35 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: nilsholthues-web-slinio
+spec:
+  entryPoints:
+    - public
+  routes:
+    - match: Host(`nilsholthues.slin.io`)
+      kind: Rule
+      services:
+        - name: nilsholthues-web
+          port: 80
+  tls:
+    secretName: slin-io-wildcard-tls   # <- an deinen bestehenden Wildcard-Secret-Namen anpassen
+
+---
+# Phase C — sobald DNS-Delegation + eigenes Zertifikat für nils-holthues.de stehen,
+# einfach aktivieren (und ggf. mit obigem Rule zusammenlegen oder als eigene IngressRoute lassen):
+#
+# apiVersion: traefik.io/v1alpha1
+# kind: IngressRoute
+# metadata:
+#   name: nilsholthues-web-customdomain
+# spec:
+#   entryPoints:
+#     - public
+#   routes:
+#     - match: Host(`nils-holthues.de`) || Host(`www.nils-holthues.de`)
+#       kind: Rule
+#       services:
+#         - name: nilsholthues-web
+#           port: 80
+#   tls:
+#     secretName: nils-holthues-de-tls

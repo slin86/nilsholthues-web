@@ -1,0 +1,48 @@
+name: build-and-push
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/slin86/nilsholthues-web:${{ github.sha }}
+            ghcr.io/slin86/nilsholthues-web:latest
+
+      - name: Install kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Bump image tag for ArgoCD
+        run: |
+          cd k8s/base
+          kustomize edit set image ghcr.io/slin86/nilsholthues-web=ghcr.io/slin86/nilsholthues-web:${{ github.sha }}
+
+      - name: Commit updated manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add k8s/base/kustomization.yaml
+          git diff --cached --quiet || git commit -m "chore: bump image to ${{ github.sha }} [skip ci]"
+          git push
