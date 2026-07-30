@@ -19,13 +19,8 @@ k8s/overlays/public/    IngressRoute on nilsholthues.slin.io
 
 ## Rollout
 
-1. **Phase A (internal):** ArgoCD app points to `overlays/internal` → testing under
-   `nilsholthues.home.lan`.
-2. **Phase B (slin.io):** Change `targetRevision`/`path` in the ArgoCD app to
-   `overlays/public`. The `*.slin.io` wildcard DNS and certificate are already
-   in place — no new DNS changes needed, just adjust the secret name in
-   `ingressroute.yaml` to your actual wildcard secret name.
-3. **Phase C (nils-holthues.de):** see runbook below, then activate the commented
+TODO: 
+ - **(nils-holthues.de):** see runbook below, then activate the commented
    block in `ingressroute.yaml`.
 
 ## Runbook: connecting nils-holthues.de (registered with united-domains)
