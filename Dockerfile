@@ -1,4 +1,4 @@
-FROM nginx:alpine
+FROM nginx:1.31.9-alpine
 
 COPY index.html /usr/share/nginx/html/index.html
 COPY *.jpg /usr/share/nginx/html/
